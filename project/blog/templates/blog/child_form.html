@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form method="post">
+    {%csrf_token%}
+    {{form}}
+    <button id="add-parent">+</button>
+    <input type="submit">
+</form>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.js"
+        integrity="sha512-WNLxfP/8cVYL9sj8Jnp6et0BkubLP31jhTG9vhL/F5uEZmg5wEzKoXp1kJslzPQWwPT1eyMiSxlKCgzHLOTOTQ=="
+        crossorigin="anonymous"></script>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    function setData(data) {
+            console.log(data);
+            console.log("before ajax call")
+            $.ajax({
+                 url: '{% url 'get-parent-id' %}',
+                 type : 'POST',
+                 headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                 },
+                 data: {
+                 "id": data
+                 },
+                 success: function(response) {
+                    let optText = response[0].fields['name'];
+                    let optValue = response[0]['pk'];
+                    $('#id_parent option:selected').removeAttr('selected');
+                    $('#id_parent').append('<option value="'+optValue+'" selected>'+optText+'</option>');
+                    $(':focus').blur()
+                 }
+             });
+        }
+        $(document).ready(function() {
+            console.log( "ready!" );
+            document.querySelector('#add-parent').onclick = function () {
+            var popup = window.open('{% url 'parent-create' %}', '', "width=400, height=400");
+
+            var popupTick = setInterval(function() {
+            if (popup.closed) {
+                clearInterval(popupTick);
+                console.log('window closed!');
+            }
+            }, 500);
+            return false;
+            };
+        });
+
+</script>
+</body>
+</html>
